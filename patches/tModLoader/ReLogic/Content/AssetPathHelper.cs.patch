@@ -1,0 +1,94 @@
+--- src/TerrariaNetCore/ReLogic/Content/AssetPathHelper.cs
++++ src/tModLoader/ReLogic/Content/AssetPathHelper.cs
+@@ -1,45 +_,64 @@
+ using System;
++using System.Diagnostics;
+ using System.IO;
+ 
+ namespace ReLogic.Content
+ {
+ 	public static class AssetPathHelper
+ 	{
++		public static string CleanPath(string path, StringComparison mode) {
++			bool nuh = path.StartsWith("Content/Items/");
++			Stopwatch stopwatch = new();
++			stopwatch.Start();
++			int times = nuh ? 1 : 1;
+-		public static string CleanPath(string path) {
++			for (int i = 0; i < times; i++) {
+-			path = path.Replace('/', '\\');
++				path = path.Replace("/", "\\", mode);
+-			path = path.Replace("\\.\\", "\\");
++				path = path.Replace("\\.\\", "\\", mode);
+-			while (path.StartsWith(".\\")) {
++				while (path.StartsWith(".\\", mode)) {
+-				path = path.Substring(".\\".Length);
++					path = path.Substring(".\\".Length);
+-			}
++				}
+ 
+-			while (path.EndsWith("\\.")) {
++				while (path.EndsWith("\\.", mode)) {
+-				path = ((path.Length <= "\\.".Length) ? "\\" : path.Substring(0, path.Length - "\\.".Length));
++					path = ((path.Length <= "\\.".Length) ? "\\" : path.Substring(0, path.Length - "\\.".Length));
+-			}
++				}
+ 
+-			int num;
++				int num;
+-			for (num = 1; num < path.Length; num = CollapseParentDirectory(ref path, num, "\\..\\".Length)) {
++				for (num = 1; num < path.Length; num = CollapseParentDirectory(ref path, num, "\\..\\".Length, mode)) {
+-				num = path.IndexOf("\\..\\", num);
++					num = path.IndexOf("\\..\\", num, mode);
+-				if (num < 0)
++					if (num < 0)
+-					break;
++						break;
+-			}
++				}
+ 
+-			if (path.EndsWith("\\..")) {
++				if (path.EndsWith("\\..", mode)) {
+-				int num2 = path.Length - "\\..".Length;
++					int num2 = path.Length - "\\..".Length;
+-				if (num2 > 0)
++					if (num2 > 0)
+-					CollapseParentDirectory(ref path, num2, "\\..".Length);
++						CollapseParentDirectory(ref path, num2, "\\..".Length, mode);
+-			}
++				}
+ 
+-			if (path == ".")
++				if (path == ".")
+-				path = string.Empty;
++					path = string.Empty;
+ 
+-			if (Path.DirectorySeparatorChar != '\\')
++				if (Path.DirectorySeparatorChar != '\\')
+-				path = path.Replace('\\', Path.DirectorySeparatorChar);
++					path = path.Replace("\\", Path.DirectorySeparatorChar.ToString(), mode);
+-
++			}
++			stopwatch.Stop();
++			if (nuh)
++				Console.WriteLine($"Mode: {mode}, Time: {stopwatch.ElapsedTicks}Ticks");
+ 			return path;
+ 		}
++		public static string CleanPath(string path) {
++			if (path.StartsWith("Content/Items/")) {
++				Console.WriteLine($"Path: {path}, ����: 1");
++				string rrpath = CleanPath(path, StringComparison.Ordinal);
++				return rrpath;
++			}
++			else {
++				return CleanPath(path, StringComparison.CurrentCulture);
++			}
++		}
+ 
+-		private static int CollapseParentDirectory(ref string path, int position, int removeLength) {
++		private static int CollapseParentDirectory(ref string path, int position, int removeLength, StringComparison mode) {
+-			int num = path.LastIndexOf('\\', position - 1) + 1;
++			int num = path.LastIndexOf("\\", position - 1, mode) + 1;
+ 			path = path.Remove(num, position - num + removeLength);
+ 			return Math.Max(num - 1, 1);
+ 		}

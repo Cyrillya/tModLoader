@@ -4,6 +4,7 @@ using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.GameContent.Creative;
 using Terraria.ModLoader;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ExampleMod.Content.Items
 {
@@ -29,6 +30,25 @@ namespace ExampleMod.Content.Items
 			Item.maxStack = 999;
 			Item.value = 1000; // Makes the item worth 1 gold.
 			Item.rare = ItemRarityID.Orange;
+		}
+
+		public override void PostDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {
+			base.PostDrawInInventory(spriteBatch, position, frame, drawColor, itemColor, origin, scale);
+
+			float posx = 600f;
+			Test(spriteBatch, "Erhöht", ref posx);
+			Test(spriteBatch, "daño", ref posx);
+			Test(spriteBatch, "arobabilità", ref posx);
+			Test(spriteBatch, "aéveillé", ref posx);
+			Test(spriteBatch, "aedução", ref posx);
+			Test(spriteBatch, "abrażeń", ref posx);
+			Test(spriteBatch, "потратитьбоеприпасы", ref posx);
+		}
+
+		private void Test(SpriteBatch spriteBatch, string name, ref float posX) {
+			var texture = ModContent.Request<Texture2D>("ExampleMod/Content/Items/" + name, ReLogic.Content.AssetRequestMode.ImmediateLoad).Value;
+			spriteBatch.Draw(texture, new Vector2(posX, 500f), Color.White);
+			posX += 50f;
 		}
 
 		public override void PostUpdate() {
